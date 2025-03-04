@@ -16,6 +16,7 @@ package v2
 
 import (
 	"encoding/json"
+	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -150,11 +151,11 @@ type ApisixRouteHTTPMatchExpr struct {
 	Op string `json:"op" yaml:"op"`
 	// Set is an array type object of the expression.
 	// It should be used when the Op is "in" or "not_in";
+	// Set and Value are exclusive so only of them can be set
+	// in the same time.
 	Set []string `json:"set" yaml:"set"`
 	// Value is the normal type object for the expression,
 	// it should be used when the Op is not "in" and "not_in".
-	// Set and Value are exclusive so only of them can be set
-	// in the same time.
 	Value *string `json:"value" yaml:"value"`
 }
 
@@ -185,18 +186,37 @@ type ApisixRoutePlugin struct {
 // any plugins.
 type ApisixRoutePluginConfig map[string]interface{}
 
+var pluginConfigMutex sync.Mutex
+
 func (p ApisixRoutePluginConfig) DeepCopyInto(out *ApisixRoutePluginConfig) {
-	b, _ := json.Marshal(&p)
-	_ = json.Unmarshal(b, out)
+    if p == nil {
+        *out = nil
+        return
+    }
+    
+    pluginConfigMutex.Lock()
+    defer pluginConfigMutex.Unlock()
+    
+    b, err := json.Marshal(&p)
+    if err != nil {
+        return
+    }
+    
+    newMap := make(ApisixRoutePluginConfig)
+    if err := json.Unmarshal(b, &newMap); err != nil {
+        return
+    }
+    
+    *out = newMap
 }
 
 func (p *ApisixRoutePluginConfig) DeepCopy() *ApisixRoutePluginConfig {
-	if p == nil {
-		return nil
-	}
-	out := new(ApisixRoutePluginConfig)
-	p.DeepCopyInto(out)
-	return out
+    if p == nil {
+        return nil
+    }
+    out := new(ApisixRoutePluginConfig)
+    p.DeepCopyInto(out)
+    return out
 }
 
 // ApisixRouteAuthentication is the authentication-related
