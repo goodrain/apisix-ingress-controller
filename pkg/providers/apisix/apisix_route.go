@@ -222,9 +222,6 @@ func (c *apisixRouteController) syncRelationship(ev *types.Event, routeKey strin
 }
 
 func (c *apisixRouteController) syncServiceRelationChanges(routeKey string, toAdd, toDelete []string) {
-	c.svcLock.Lock()
-	defer c.svcLock.Unlock()
-
 	for _, svc := range toDelete {
 		delete(c.svcMap[svc], routeKey)
 	}
@@ -238,9 +235,6 @@ func (c *apisixRouteController) syncServiceRelationChanges(routeKey string, toAd
 }
 
 func (c *apisixRouteController) syncApisixUpstreamRelationChanges(routeKey string, toAdd, toDelete []string) {
-	c.apisixUpstreamLock.Lock()
-	defer c.apisixUpstreamLock.Unlock()
-
 	for _, au := range toDelete {
 		delete(c.apisixUpstreamMap[au], routeKey)
 	}
@@ -298,7 +292,11 @@ func (c *apisixRouteController) sync(ctx context.Context, ev *types.Event) error
 	}
 
 	// sync before translation
+	c.svcLock.Lock()
+	c.apisixUpstreamLock.Lock()
 	c.syncRelationship(ev, obj.Key, ar)
+	c.svcLock.Unlock()
+	c.apisixUpstreamLock.Unlock()
 
 	if ev.Type == types.EventDelete {
 		if ar != nil {
