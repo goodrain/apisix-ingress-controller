@@ -17,6 +17,21 @@
 #
 -->
 
+# 代码修改说明20250310：
+
+1. 本代码基于 apisix-ingress-controller v1.8.3 的 tag 进行修改
+
+2. 代码只修改了导致 404 问题的 bug，其余代码均未修改
+
+3. 代码在 `pkg/types/apisix/v1/zz_generated.deepcopy.go` , `pkg/apisix/cache/memdb.go`, `pkg/kube/apisix/apis/config/v2/types.go` 和 `pkg/providers/apisix/apisix_route.go` 这四个文件中进行了修改。
+
+4. 代码 404 的原因是在 apisix-ingress-controller 中有多个 goroutine 调用，在 apisix-ingress-controller watch 相应的 CRD 资源时，由于未做好并发控制，导致
+   了 apisix-ingress-controller 中的 `apisixRoute` 资源的 `DeepCopy` 方法的 map 被不同的 goroutine 并发写入，而在 golang 中，map 非并发安全，导致 apisix-ingress-controller 重启。
+
+5. apisix-ingress-controller 被重启后，会导致 apisix 无法正确的获取并更新 apisix-ingress-controller 中的 `apisixRoute` 资源，导致 apisix 无法正确的路由请求，最终导致 404。
+
+6. 代码修改了 `apisix-ingress-controller` 中的 `apisixRoute` 资源的 `DeepCopy` 方法，使用了 `sync.Map` 来替换原来的 map，从而解决了并发写入的问题。
+
 # Apache APISIX for Kubernetes
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/apache/apisix-ingress-controller)](https://goreportcard.com/report/github.com/apache/apisix-ingress-controller)
