@@ -187,7 +187,10 @@ type ApisixRoutePluginConfig map[string]interface{}
 
 func (p ApisixRoutePluginConfig) DeepCopyInto(out *ApisixRoutePluginConfig) {
 	b, _ := json.Marshal(&p)
-	_ = json.Unmarshal(b, out)
+	// Generated copies first assign *out = *in, so out may still alias p.
+	var copied ApisixRoutePluginConfig
+	_ = json.Unmarshal(b, &copied)
+	*out = copied
 }
 
 func (p *ApisixRoutePluginConfig) DeepCopy() *ApisixRoutePluginConfig {
@@ -698,7 +701,9 @@ type ConfigSet []interface{}
 
 func (p ConfigSet) DeepCopyInto(out *ConfigSet) {
 	b, _ := json.Marshal(&p)
-	_ = json.Unmarshal(b, out)
+	var copied ConfigSet
+	_ = json.Unmarshal(b, &copied)
+	*out = copied
 }
 
 func (p *ConfigSet) DeepCopy() *ConfigSet {
@@ -714,7 +719,9 @@ type Config map[string]interface{}
 
 func (p Config) DeepCopyInto(out *Config) {
 	b, _ := json.Marshal(&p)
-	_ = json.Unmarshal(b, out)
+	var copied Config
+	_ = json.Unmarshal(b, &copied)
+	*out = copied
 }
 
 func (p *Config) DeepCopy() *Config {

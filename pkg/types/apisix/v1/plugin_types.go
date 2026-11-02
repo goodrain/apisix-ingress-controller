@@ -191,7 +191,9 @@ type Headers map[string]any
 
 func (p *Headers) DeepCopyInto(out *Headers) {
 	b, _ := json.Marshal(&p)
-	_ = json.Unmarshal(b, out)
+	var copied Headers
+	_ = json.Unmarshal(b, &copied)
+	*out = copied
 }
 
 func (p *Headers) DeepCopy() *Headers {
