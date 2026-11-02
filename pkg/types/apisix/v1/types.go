@@ -186,7 +186,10 @@ type Plugins map[string]interface{}
 
 func (p *Plugins) DeepCopyInto(out *Plugins) {
 	b, _ := json.Marshal(&p)
-	_ = json.Unmarshal(b, out)
+	// Decode independently of the shallow copy made by generated callers.
+	var copied Plugins
+	_ = json.Unmarshal(b, &copied)
+	*out = copied
 }
 
 func (p *Plugins) DeepCopy() *Plugins {

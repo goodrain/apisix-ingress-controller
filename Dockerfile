@@ -15,9 +15,16 @@
 #
 ARG ENABLE_PROXY=false
 ARG BASE_IMAGE_TAG=nonroot
+ARG GO_BUILD_IMAGE=golang:1.20
 
-FROM golang:1.20 AS build-env
+FROM --platform=$BUILDPLATFORM ${GO_BUILD_IMAGE} AS build-env
 LABEL maintainer="gxthrj@163.com"
+
+ARG ENABLE_PROXY
+ARG TARGETOS
+ARG TARGETARCH
+ARG VERSION=dev
+ARG GIT_SHA=unknown
 
 WORKDIR /build
 COPY go.* ./
@@ -26,10 +33,17 @@ RUN if [ "$ENABLE_PROXY" = "true" ] ; then go env -w GOPROXY=https://goproxy.cn,
     && go mod download
 
 COPY . .
-RUN --mount=type=cache,target=/root/.cache/go-build make build
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    GOOS="$TARGETOS" GOARCH="$TARGETARCH" make build \
+    VERSION="$VERSION" GITSHA="$GIT_SHA" OSNAME="$TARGETOS" OSARCH="$TARGETARCH"
 
 FROM gcr.io/distroless/static-debian12:${BASE_IMAGE_TAG}
 LABEL maintainer="gxthrj@163.com"
+ARG VERSION=dev
+ARG GIT_SHA=unknown
+LABEL org.opencontainers.image.version="$VERSION" \
+      org.opencontainers.image.revision="$GIT_SHA" \
+      org.opencontainers.image.source="https://github.com/goodrain/apisix-ingress-controller"
 ENV TZ=Hongkong
 
 WORKDIR /ingress-apisix
