@@ -1226,9 +1226,11 @@ func (c *cluster) pushEvent(eventType string, key string, value []byte) {
 	log.Debugw("push event to adapter", zap.String("event", eventType), zap.String("key", key), zap.ByteString("value", value))
 	var et types.EventType
 	switch eventType {
-	case "create":
-		et = types.EventAdd
-	case "update":
+	case "create", "update":
+		// APISIX resource PUTs are upserts. Reconciliation can create an ID
+		// already present in the adapter, including during cache warm-up.
+		// EventUpdate also creates missing keys, whereas EventAdd discards
+		// writes to existing keys and leaves their stale configuration in place.
 		et = types.EventUpdate
 	case "delete":
 		et = types.EventDelete
