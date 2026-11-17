@@ -227,7 +227,7 @@ func (c *gatewayHTTPRouteController) onAdd(obj interface{}) {
 func (c *gatewayHTTPRouteController) onUpdate(oldObj, newObj interface{}) {
 	oldHTTPRoute := oldObj.(*gatewayv1beta1.HTTPRoute)
 	newHTTPRoute := newObj.(*gatewayv1beta1.HTTPRoute)
-	if oldHTTPRoute.ResourceVersion >= newHTTPRoute.ResourceVersion {
+	if oldHTTPRoute.ResourceVersion == newHTTPRoute.ResourceVersion {
 		return
 	}
 	key, err := cache.MetaNamespaceKeyFunc(oldObj)

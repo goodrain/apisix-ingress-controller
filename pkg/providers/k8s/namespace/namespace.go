@@ -159,7 +159,7 @@ func (c *namespaceController) onAdd(obj interface{}) {
 func (c *namespaceController) onUpdate(pre, cur interface{}) {
 	oldNamespace := pre.(*corev1.Namespace)
 	newNamespace := cur.(*corev1.Namespace)
-	if oldNamespace.ResourceVersion >= newNamespace.ResourceVersion {
+	if oldNamespace.ResourceVersion == newNamespace.ResourceVersion {
 		return
 	}
 	key, err := cache.MetaNamespaceKeyFunc(cur)

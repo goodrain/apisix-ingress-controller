@@ -128,7 +128,8 @@ func TestPodOnUpdate(t *testing.T) {
 	pod1 := pod0.DeepCopy()
 	pod1.SetResourceVersion("1")
 
-	ctl.onUpdate(pod1, pod0)
+	// A resync delivers the same resource version and is ignored.
+	ctl.onUpdate(pod0, pod0.DeepCopy())
 	name, err := ctl.podCache.GetNameByIP("10.0.5.12")
 	assert.Equal(t, "", name)
 	assert.Equal(t, types.ErrPodNotFound, err)
