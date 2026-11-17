@@ -100,7 +100,7 @@ func (c *podController) onAdd(obj interface{}) {
 func (c *podController) onUpdate(oldObj, newObj interface{}) {
 	prev := oldObj.(*corev1.Pod)
 	curr := newObj.(*corev1.Pod)
-	if prev.GetResourceVersion() >= curr.GetResourceVersion() {
+	if prev.GetResourceVersion() == curr.GetResourceVersion() {
 		return
 	}
 

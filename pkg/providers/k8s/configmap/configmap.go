@@ -248,7 +248,7 @@ func (c *configmapController) onAdd(obj interface{}) {
 func (c *configmapController) onUpdate(pre, cur interface{}) {
 	old := pre.(*corev1.ConfigMap)
 	new := cur.(*corev1.ConfigMap)
-	if old.ResourceVersion >= new.ResourceVersion {
+	if old.ResourceVersion == new.ResourceVersion {
 		return
 	}
 	key, err := cache.MetaNamespaceKeyFunc(cur)

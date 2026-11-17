@@ -223,7 +223,7 @@ func (c *gatewayTCPRouteController) onAdd(obj interface{}) {
 func (c *gatewayTCPRouteController) onUpdate(oldObj, newObj interface{}) {
 	oldTCPRoute := oldObj.(*gatewayv1alpha2.TCPRoute)
 	newTCPRoute := newObj.(*gatewayv1alpha2.TCPRoute)
-	if oldTCPRoute.ResourceVersion >= newTCPRoute.ResourceVersion {
+	if oldTCPRoute.ResourceVersion == newTCPRoute.ResourceVersion {
 		return
 	}
 	key, err := cache.MetaNamespaceKeyFunc(oldObj)
